@@ -1,0 +1,104 @@
+{
+  "doctors": [
+    {
+      "id": "doc_skin_chen",
+      "name": "陈医生",
+      "department": "皮肤科",
+      "city": "上海",
+      "projects": "敏感肌修护、光电抗衰、痘印痘坑管理",
+      "persona": "温和耐心，擅长把复杂问题讲清楚，强调先判断基础条件再做方案。",
+      "style": "专业亲和",
+      "tags": ["温柔耐心", "技术派", "审美在线"],
+      "banned": "保证效果、一次根治、永久、不反弹、最安全、绝对有效"
+    },
+    {
+      "id": "doc_dental_lin",
+      "name": "林医生",
+      "department": "口腔科",
+      "city": "杭州",
+      "projects": "隐形矫正、牙齿贴面、儿童早矫",
+      "persona": "严谨细致，重视长期口腔健康，也会用生活化语言降低客户紧张感。",
+      "style": "理性可信",
+      "tags": ["方案严谨", "长期主义", "细节控"],
+      "banned": "百分百、最低价、无痛保证、立刻变美、绝无风险"
+    }
+  ],
+  "assets": [
+    {
+      "id": "asset_seed_1",
+      "name": "门诊日常：面诊沟通",
+      "type": "image",
+      "mime": "image/svg+xml",
+      "url": "/sample/clinic-consult.svg",
+      "category": "门诊日常",
+      "project": "皮肤管理",
+      "doctorId": "doc_skin_chen",
+      "notes": "医生在诊室和客户沟通方案，画面适合建立专业信任。",
+      "createdAt": "2026-05-26T06:30:00.000Z"
+    },
+    {
+      "id": "asset_seed_2",
+      "name": "科普素材：皮肤屏障",
+      "type": "image",
+      "mime": "image/svg+xml",
+      "url": "/sample/skin-barrier.svg",
+      "category": "专业科普",
+      "project": "敏感肌修护",
+      "doctorId": "doc_skin_chen",
+      "notes": "皮肤屏障、泛红、刺痛、干痒的科普图，适合引导客户自查。",
+      "createdAt": "2026-05-26T06:31:00.000Z"
+    },
+    {
+      "id": "asset_seed_3",
+      "name": "案例反馈：矫正复诊",
+      "type": "image",
+      "mime": "image/svg+xml",
+      "url": "/sample/dental-review.svg",
+      "category": "案例反馈",
+      "project": "隐形矫正",
+      "doctorId": "doc_dental_lin",
+      "notes": "客户复诊反馈和方案调整，适合展示长期管理。",
+      "createdAt": "2026-05-26T06:32:00.000Z"
+    }
+  ],
+  "posts": [
+    {
+      "id": "post_seed_1",
+      "doctorId": "doc_skin_chen",
+      "assetIds": ["asset_seed_1"],
+      "goal": "建立信任",
+      "customerStage": "刚添加微信",
+      "tone": "专业亲和",
+      "scheduledDate": "2026-05-26",
+      "timeSlot": "09:30",
+      "copy": "今天门诊里聊得最多的，还是“我到底适不适合做这个项目”。\n\n其实专业方案不是直接推荐项目，而是先看皮肤基础、近期状态和想改善的优先级。尤其是泛红、干痒、反复爆痘这类情况，先把问题判断清楚，比着急上项目更重要。\n\n如果你也拿不准自己的情况，可以先把近期照片发我，我帮你做个初步判断。",
+      "status": "待发布",
+      "createdAt": "2026-05-26T06:33:00.000Z",
+      "publishedAt": null
+    },
+    {
+      "id": "post_seed_2",
+      "doctorId": "doc_dental_lin",
+      "assetIds": ["asset_seed_3"],
+      "goal": "案例转化",
+      "customerStage": "已咨询未到店",
+      "tone": "理性可信",
+      "scheduledDate": "2026-05-26",
+      "timeSlot": "20:30",
+      "copy": "矫正不是“戴上牙套就结束”，真正影响结果的，是每一次复诊里的细节调整。\n\n今天有位朋友复诊时提到，最安心的是每个阶段都知道自己为什么这样调整。牙齿移动需要时间，也需要医生持续观察咬合、牙周和面型变化。\n\n最近在考虑矫正的朋友，可以先拍一下正面、侧面和咬合照片，我先帮你看看大概方向。",
+      "status": "待发布",
+      "createdAt": "2026-05-26T06:34:00.000Z",
+      "publishedAt": null
+    }
+  ],
+  "settings": {
+    "orgName": "医生 IP 朋友圈运营工作台",
+    "complianceWords": ["保证", "根治", "永久", "绝对", "最安全", "百分百", "无风险", "立刻见效"],
+    "contentMix": {
+      "专业科普": 40,
+      "案例反馈": 25,
+      "门诊日常": 20,
+      "项目转化": 15
+    }
+  }
+}

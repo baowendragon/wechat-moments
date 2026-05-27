@@ -1,0 +1,19 @@
+<svg width="1200" height="800" viewBox="0 0 1200 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="800" fill="#F4F1EA"/>
+  <rect x="70" y="70" width="1060" height="660" rx="28" fill="#FFFFFF"/>
+  <rect x="110" y="110" width="470" height="580" rx="22" fill="#DCEBE8"/>
+  <rect x="630" y="128" width="420" height="48" rx="10" fill="#2F5F63"/>
+  <rect x="630" y="208" width="320" height="20" rx="10" fill="#9A6A52"/>
+  <rect x="630" y="248" width="380" height="20" rx="10" fill="#C9B6A2"/>
+  <rect x="630" y="288" width="300" height="20" rx="10" fill="#C9B6A2"/>
+  <rect x="630" y="370" width="190" height="150" rx="18" fill="#F0C9B7"/>
+  <rect x="850" y="370" width="190" height="150" rx="18" fill="#E6DCCB"/>
+  <circle cx="330" cy="270" r="82" fill="#F0C9B7"/>
+  <path d="M230 614c22-126 66-190 132-190s111 64 133 190H230z" fill="#2F5F63"/>
+  <circle cx="430" cy="355" r="62" fill="#E9B79E"/>
+  <path d="M371 614c18-96 58-145 120-145s104 49 122 145H371z" fill="#9A6A52"/>
+  <rect x="236" y="156" width="220" height="24" rx="12" fill="#FFFFFF" opacity=".65"/>
+  <rect x="232" y="652" width="240" height="18" rx="9" fill="#FFFFFF" opacity=".55"/>
+  <text x="630" y="610" fill="#314044" font-family="Arial, sans-serif" font-size="34" font-weight="700">门诊沟通</text>
+  <text x="630" y="654" fill="#687478" font-family="Arial, sans-serif" font-size="22">先判断基础，再制定方案</text>
+</svg>

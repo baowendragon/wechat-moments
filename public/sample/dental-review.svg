@@ -1,0 +1,15 @@
+<svg width="1200" height="800" viewBox="0 0 1200 800" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="1200" height="800" fill="#F7F4EF"/>
+  <rect x="74" y="72" width="1052" height="656" rx="32" fill="#FFFFFF"/>
+  <rect x="128" y="126" width="420" height="548" rx="24" fill="#E6DCCB"/>
+  <rect x="624" y="150" width="396" height="54" rx="12" fill="#2F5F63"/>
+  <rect x="624" y="246" width="332" height="20" rx="10" fill="#9A6A52"/>
+  <rect x="624" y="288" width="414" height="20" rx="10" fill="#C9B6A2"/>
+  <rect x="624" y="330" width="290" height="20" rx="10" fill="#C9B6A2"/>
+  <path d="M232 350c0-76 49-126 116-126s116 50 116 126c0 86-42 176-75 176-18 0-21-52-41-52s-23 52-41 52c-33 0-75-90-75-176z" fill="#FFFFFF"/>
+  <path d="M332 238c34 12 74 10 112-4" stroke="#86A9A7" stroke-width="14" stroke-linecap="round"/>
+  <rect x="624" y="444" width="150" height="150" rx="18" fill="#DCEBE8"/>
+  <rect x="808" y="444" width="150" height="150" rx="18" fill="#F0C9B7"/>
+  <text x="624" y="648" fill="#314044" font-family="Arial, sans-serif" font-size="34" font-weight="700">复诊反馈</text>
+  <text x="624" y="690" fill="#687478" font-family="Arial, sans-serif" font-size="22">长期观察，持续调整</text>
+</svg>

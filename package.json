@@ -1,0 +1,12 @@
+{
+  "name": "wechat-moments-ops",
+  "version": "0.1.0",
+  "private": true,
+  "description": "医生 IP 朋友圈运营工作台 MVP",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

@@ -1,0 +1,20 @@
+services:
+  - type: web
+    name: wechat-moments-ops
+    runtime: node
+    plan: starter
+    region: singapore
+    buildCommand: npm install --omit=dev
+    startCommand: node server.js
+    healthCheckPath: /healthz
+    envVars:
+      - key: NODE_VERSION
+        value: 24.14.0
+      - key: HOST
+        value: 0.0.0.0
+      - key: DATA_DIR
+        value: /var/data
+    disk:
+      name: wechat-moments-data
+      mountPath: /var/data
+      sizeGB: 1
