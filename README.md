@@ -58,11 +58,10 @@ http://服务器内网IP:4173
 
 - `startCommand: node server.js`
 - `HOST=0.0.0.0`
-- `DATA_DIR=/var/data`
-- 挂载 1GB 持久化磁盘到 `/var/data`
+- `plan: free`
 - 健康检查路径 `/healthz`
 
-注意：上传素材和排期数据依赖持久化磁盘，因此建议使用支持磁盘的付费 Web Service。免费实例如果没有磁盘，服务重启或重新部署后，本地写入的数据可能丢失。
+注意：免费实例没有持久化磁盘，上传素材和排期数据在服务重启或重新部署后可能丢失。正式给团队长期使用时，建议升级到支持磁盘的付费 Web Service，并设置 `DATA_DIR=/var/data`。
 
 ## 数据位置
 
