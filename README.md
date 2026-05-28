@@ -59,33 +59,67 @@ http://服务器内网IP:4173
 - `startCommand: node server.js`
 - `HOST=0.0.0.0`
 - `plan: free`
-- `OPENAI_MODEL=gpt-5-mini`
-- `OPENAI_API_KEY` 作为 Render Secret 环境变量
+- `AI_PROVIDER_NAME=胜算云`
+- `AI_BASE_URL=https://router.shengsuanyun.com/api/v1`
+- `AI_MODEL` 指定调用的模型
+- `AI_API_KEY` 作为 Render Secret 环境变量
 - 健康检查路径 `/healthz`
 
 注意：免费实例没有持久化磁盘，上传素材和排期数据在服务重启或重新部署后可能丢失。正式给团队长期使用时，建议升级到支持磁盘的付费 Web Service，并设置 `DATA_DIR=/var/data`。
 
-## 配置 OpenAI 文案生成
+## 配置 AI 文案生成
 
-系统会优先调用 OpenAI Responses API 生成朋友圈文案。如果没有配置 API Key，会自动降级为本地备用模板。
+系统会优先调用 AI 模型接口生成朋友圈文案。如果没有配置 API Key，会自动降级为本地备用模板。
 
-在 Render 里配置：
+### 使用胜算云
 
-1. 进入 `wechat-moments-ops` 服务。
-2. 打开 Environment。
-3. 新增或确认这些环境变量：
+胜算云文档显示它兼容 OpenAI 接口，base URL 为：
 
 ```text
-OPENAI_API_KEY=你的 OpenAI API Key
-OPENAI_MODEL=gpt-5-mini
+https://router.shengsuanyun.com/api/v1
 ```
 
-4. 保存后重新部署服务。
+在 Render 的 `wechat-moments-ops` 服务里打开 Environment，配置：
+
+```text
+AI_PROVIDER_NAME=胜算云
+AI_BASE_URL=https://router.shengsuanyun.com/api/v1
+AI_API_KEY=你的胜算云 API Key
+AI_MODEL=你在胜算云购买或可用的模型名称
+```
+
+`AI_MODEL` 要以胜算云控制台或文档里的模型名称为准。比如你购买的是某个 DeepSeek、Kimi、Qwen 或 GPT 模型，就填对应模型 ID。
+
+保存后点击 `Save, rebuild, and deploy`。
 
 页面“生成朋友圈”区域会显示当前 AI 状态：
 
-- `OpenAI 已启用`：说明正在调用 OpenAI 模型。
+- `胜算云 已启用`：说明正在调用胜算云模型网关。
 - `当前为本地备用生成`：说明还没有配置 API Key，或服务未读取到环境变量。
+
+### 使用 OpenAI 官方 API
+
+如果要切回 OpenAI 官方 API，配置：
+
+```text
+AI_PROVIDER_NAME=OpenAI
+AI_BASE_URL=https://api.openai.com/v1
+AI_API_KEY=你的 OpenAI API Key
+AI_MODEL=gpt-5-mini
+```
+
+## ChatGPT Plus 手动模式
+
+内测阶段如果不想走 OpenAI API 计费，可以使用页面里的“ChatGPT Plus 手动模式”：
+
+1. 在“生成文案”里选择医生、目的、客户阶段、素材。
+2. 点击“复制 ChatGPT 提示词”。
+3. 把提示词粘贴到 ChatGPT Plus。
+4. 复制 ChatGPT 生成的朋友圈文案。
+5. 粘贴回网站的“粘贴 ChatGPT 生成的朋友圈文案”输入框。
+6. 点击“保存手动文案到排期”。
+
+这种模式不会消耗 OpenAI API 额度，但需要运营手动在 ChatGPT 里生成并粘贴回来。
 
 ## 数据位置
 

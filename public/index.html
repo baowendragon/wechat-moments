@@ -66,6 +66,18 @@
                 </div>
               </div>
               <div class="ai-status" id="aiStatus"></div>
+              <div class="manual-mode">
+                <div>
+                  <strong>ChatGPT Plus 手动模式</strong>
+                  <p>内测阶段可复制提示词到 ChatGPT，生成后粘贴回来加入排期，不消耗 API 额度。</p>
+                </div>
+                <button class="ghost-button" id="copyPromptBtn" type="button">复制 ChatGPT 提示词</button>
+                <label>
+                  粘贴 ChatGPT 生成的朋友圈文案
+                  <textarea name="manualCopy" id="manualCopy" rows="5" placeholder="把 ChatGPT 生成的文案粘贴到这里，再点击“保存手动文案”"></textarea>
+                </label>
+                <button class="quiet-button full" id="saveManualBtn" type="button">保存手动文案到排期</button>
+              </div>
 
               <div class="form-grid">
                 <label>

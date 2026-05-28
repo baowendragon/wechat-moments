@@ -12,8 +12,10 @@ const DATA_DIR = process.env.DATA_DIR ? path.resolve(process.env.DATA_DIR) : DEF
 const UPLOAD_DIR = path.join(DATA_DIR, "uploads");
 const DB_PATH = path.join(DATA_DIR, "db.json");
 const SEED_DB_PATH = path.join(DEFAULT_DATA_DIR, "db.json");
-const OPENAI_MODEL = process.env.OPENAI_MODEL || "gpt-5-mini";
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY || "";
+const AI_BASE_URL = (process.env.AI_BASE_URL || process.env.OPENAI_BASE_URL || "https://api.openai.com/v1").replace(/\/+$/, "");
+const AI_MODEL = process.env.AI_MODEL || process.env.OPENAI_MODEL || "gpt-5-mini";
+const AI_API_KEY = process.env.AI_API_KEY || process.env.OPENAI_API_KEY || process.env.SSY_API_KEY || "";
+const AI_PROVIDER_NAME = process.env.AI_PROVIDER_NAME || (AI_BASE_URL.includes("shengsuanyun") ? "胜算云" : "OpenAI");
 
 const MIME = {
   ".html": "text/html; charset=utf-8",
@@ -97,6 +99,19 @@ function cleanText(value) {
   return String(value || "").trim();
 }
 
+function friendlyAIError(message = "") {
+  if (/quota|billing|plan/i.test(message)) {
+    return "OpenAI 额度不足，已使用本地备用文案。请检查 OpenAI Billing。";
+  }
+  if (/api key|authentication|unauthorized/i.test(message)) {
+    return "OpenAI API Key 无效或未授权，已使用本地备用文案。";
+  }
+  if (/rate limit/i.test(message)) {
+    return "OpenAI 请求过于频繁，已使用本地备用文案。";
+  }
+  return message || "OpenAI 生成失败，已使用本地备用文案。";
+}
+
 function pickExtension(mime, fileName = "") {
   const fromName = path.extname(fileName).toLowerCase();
   if (fromName) return fromName;
@@ -129,9 +144,10 @@ function getComplianceWarnings(copy, db, doctor) {
 
 function getRuntimeInfo() {
   return {
-    aiEnabled: Boolean(OPENAI_API_KEY),
-    aiProvider: OPENAI_API_KEY ? "openai" : "local",
-    aiModel: OPENAI_API_KEY ? OPENAI_MODEL : "local-template"
+    aiEnabled: Boolean(AI_API_KEY),
+    aiProvider: AI_API_KEY ? AI_PROVIDER_NAME : "local",
+    aiModel: AI_API_KEY ? AI_MODEL : "local-template",
+    aiBaseUrl: AI_API_KEY ? AI_BASE_URL : ""
   };
 }
 
@@ -296,17 +312,21 @@ function extractOpenAIText(data) {
   return "";
 }
 
-async function generateOpenAICopy(input) {
-  if (!OPENAI_API_KEY) return null;
+async function generateAICopy(input) {
+  if (!AI_API_KEY) return null;
 
-  const response = await fetch("https://api.openai.com/v1/responses", {
+  const headers = {
+    "Content-Type": "application/json",
+    Authorization: `Bearer ${AI_API_KEY}`
+  };
+  if (process.env.AI_HTTP_REFERER) headers["HTTP-Referer"] = process.env.AI_HTTP_REFERER;
+  if (process.env.AI_TITLE) headers["X-Title"] = process.env.AI_TITLE;
+
+  const response = await fetch(`${AI_BASE_URL}/responses`, {
     method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${OPENAI_API_KEY}`
-    },
+    headers,
     body: JSON.stringify({
-      model: OPENAI_MODEL,
+      model: AI_MODEL,
       instructions: [
         "你是一个医生 IP 私域朋友圈内容运营专家。",
         "你擅长把医生专业度、人设温度和轻咨询转化结合起来。",
@@ -330,7 +350,7 @@ async function generateOpenAICopy(input) {
 }
 
 async function generateBestCopy(input) {
-  if (!OPENAI_API_KEY) {
+  if (!AI_API_KEY) {
     return {
       copy: generateCopy(input),
       aiProvider: "local",
@@ -341,9 +361,9 @@ async function generateBestCopy(input) {
 
   try {
     return {
-      copy: await generateOpenAICopy(input),
-      aiProvider: "openai",
-      aiModel: OPENAI_MODEL,
+      copy: await generateAICopy(input),
+      aiProvider: AI_PROVIDER_NAME,
+      aiModel: AI_MODEL,
       aiError: null
     };
   } catch (error) {
@@ -351,7 +371,7 @@ async function generateBestCopy(input) {
       copy: generateCopy(input),
       aiProvider: "local-fallback",
       aiModel: "local-template",
-      aiError: error.message || "OpenAI 生成失败，已使用本地备用生成。"
+      aiError: friendlyAIError(error.message)
     };
   }
 }
@@ -459,6 +479,38 @@ async function handleApi(req, res, pathname) {
       aiProvider: generation.aiProvider,
       aiModel: generation.aiModel,
       aiError: generation.aiError,
+      createdAt: new Date().toISOString(),
+      publishedAt: null
+    };
+    db.posts.unshift(post);
+    writeDb(db);
+    return sendJson(res, 201, post);
+  }
+
+  if (req.method === "POST" && pathname === "/api/manual-post") {
+    const body = await readBody(req);
+    const doctor = getDoctor(db, body.doctorId);
+    if (!doctor) return sendJson(res, 400, { error: "请先选择医生。" });
+    const assets = (body.assetIds || []).map(id => getAsset(db, id)).filter(Boolean);
+    if (!assets.length) return sendJson(res, 400, { error: "请至少选择一个素材。" });
+    const copy = cleanText(body.copy);
+    if (!copy) return sendJson(res, 400, { error: "请先粘贴 ChatGPT 生成的朋友圈文案。" });
+
+    const post = {
+      id: makeId("post"),
+      doctorId: doctor.id,
+      assetIds: assets.map(asset => asset.id),
+      goal: cleanText(body.goal) || "建立信任",
+      customerStage: cleanText(body.customerStage) || "刚添加微信",
+      tone: cleanText(body.tone) || doctor.style,
+      scheduledDate: cleanText(body.scheduledDate) || nextDate(0),
+      timeSlot: cleanText(body.timeSlot) || "09:30",
+      copy,
+      status: "待发布",
+      warnings: getComplianceWarnings(copy, db, doctor),
+      aiProvider: "chatgpt-manual",
+      aiModel: "chatgpt-plus",
+      aiError: null,
       createdAt: new Date().toISOString(),
       publishedAt: null
     };

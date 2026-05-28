@@ -12,7 +12,11 @@ services:
         value: 24.14.0
       - key: HOST
         value: 0.0.0.0
-      - key: OPENAI_MODEL
+      - key: AI_PROVIDER_NAME
+        value: 胜算云
+      - key: AI_BASE_URL
+        value: https://router.shengsuanyun.com/api/v1
+      - key: AI_MODEL
         value: gpt-5-mini
-      - key: OPENAI_API_KEY
+      - key: AI_API_KEY
         sync: false

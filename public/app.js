@@ -11,6 +11,9 @@ const api = {
   async generate(payload) {
     return request("/api/generate", { method: "POST", body: payload });
   },
+  async createManualPost(payload) {
+    return request("/api/manual-post", { method: "POST", body: payload });
+  },
   async schedule(payload) {
     return request("/api/schedule", { method: "POST", body: payload });
   },
@@ -152,6 +155,26 @@ function bindForms() {
     await load();
   });
 
+  document.getElementById("copyPromptBtn").addEventListener("click", () => {
+    const payload = getGeneratePayload();
+    const prompt = buildChatGPTPrompt(payload);
+    if (!prompt) return;
+    copyText(prompt);
+  });
+
+  document.getElementById("saveManualBtn").addEventListener("click", async () => {
+    const payload = getGeneratePayload();
+    if (!payload) return;
+    const copy = document.getElementById("manualCopy").value.trim();
+    if (!copy) return toast("请先粘贴 ChatGPT 生成的文案");
+    const post = await api.createManualPost({ ...payload, copy });
+    latestPostId = post.id;
+    selectedDate = post.scheduledDate;
+    document.getElementById("manualCopy").value = "";
+    toast("手动文案已加入排期");
+    await load();
+  });
+
   document.getElementById("scheduleForm").addEventListener("submit", async event => {
     event.preventDefault();
     const data = Object.fromEntries(new FormData(event.currentTarget).entries());
@@ -159,6 +182,70 @@ function bindForms() {
     toast(`已生成 ${result.created.length} 条排期`);
     await load();
   });
+}
+
+function getGeneratePayload() {
+  const form = document.getElementById("generateForm");
+  const data = new FormData(form);
+  const assetIds = [...document.querySelectorAll("#assetPicker input:checked")].map(input => input.value);
+  if (!assetIds.length) {
+    toast("请至少选择一个素材");
+    return null;
+  }
+  return {
+    doctorId: data.get("doctorId"),
+    goal: data.get("goal"),
+    customerStage: data.get("customerStage"),
+    tone: data.get("tone"),
+    scheduledDate: data.get("scheduledDate"),
+    timeSlot: data.get("timeSlot"),
+    assetIds
+  };
+}
+
+function buildChatGPTPrompt(payload) {
+  if (!payload) return "";
+  const doctor = getDoctor(payload.doctorId);
+  const assets = payload.assetIds.map(getAsset).filter(Boolean);
+  if (!doctor || !assets.length) {
+    toast("请先选择医生和素材");
+    return "";
+  }
+
+  return [
+    "请帮我生成一条医生微信朋友圈文案，只输出正文，不要解释。",
+    "",
+    "医生信息：",
+    `- 姓名：${doctor.name}`,
+    `- 科室：${doctor.department}`,
+    `- 城市：${doctor.city}`,
+    `- 擅长项目：${doctor.projects || "未填写"}`,
+    `- 人设：${doctor.persona || "专业、耐心、可信"}`,
+    `- 说话风格：${payload.tone || doctor.style || "专业亲和"}`,
+    `- 人设标签：${(doctor.tags || []).join("、") || "专业可信"}`,
+    `- 禁用表达：${doctor.banned || "保证效果、根治、永久、绝对、百分百、无风险"}`,
+    "",
+    "发布任务：",
+    `- 发布目的：${payload.goal}`,
+    `- 客户阶段：${payload.customerStage}`,
+    "",
+    "素材信息：",
+    ...assets.map((asset, index) => [
+      `${index + 1}. ${asset.name}`,
+      `   类型：${asset.category || asset.type}`,
+      `   项目：${asset.project || "未标注"}`,
+      `   说明：${asset.notes || "运营未填写素材说明，请根据医生人设生成通用朋友圈文案。"}`
+    ].join("\n")),
+    "",
+    "文案要求：",
+    "- 像医生本人发朋友圈，不像广告，不像机构宣传稿。",
+    "- 自然、克制、有一点日常感，短句为主。",
+    "- 4-7 个短段落，总字数 90-180 字。",
+    "- 可以温和引导咨询，但不要强促销，不要制造焦虑。",
+    "- 不承诺疗效，不用绝对化表达，不说所有人都适合。",
+    "- 多用“先判断基础”“结合个人情况”“面诊后确认”“大方向”这类稳妥表达。",
+    "- 如果是案例或反馈素材，不要编造具体效果、数字、时间、客户身份。"
+  ].join("\n");
 }
 
 function renderAll() {
@@ -179,9 +266,9 @@ function renderAIStatus() {
   const box = document.getElementById("aiStatus");
   if (!box) return;
   const runtime = state.runtime || {};
-  if (runtime.aiProvider === "openai") {
+  if (runtime.aiEnabled) {
     box.className = "ai-status active";
-    box.innerHTML = `<strong>OpenAI 已启用</strong><span>当前模型：${escapeHtml(runtime.aiModel)}</span>`;
+    box.innerHTML = `<strong>${escapeHtml(runtime.aiProvider)} 已启用</strong><span>当前模型：${escapeHtml(runtime.aiModel)}</span>`;
     return;
   }
   box.className = "ai-status fallback";
@@ -272,7 +359,8 @@ function taskCard(post) {
 }
 
 function aiLabel(post) {
-  if (post.aiProvider === "openai") return post.aiModel || "OpenAI";
+  if (post.aiProvider && !["local", "local-fallback", "chatgpt-manual"].includes(post.aiProvider)) return post.aiModel || post.aiProvider;
+  if (post.aiProvider === "chatgpt-manual") return "ChatGPT 手动";
   if (post.aiProvider === "local-fallback") return "本地备用";
   return "本地生成";
 }
