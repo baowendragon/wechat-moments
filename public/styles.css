@@ -368,6 +368,36 @@ textarea {
   padding: 14px;
 }
 
+.ai-status {
+  display: grid;
+  gap: 4px;
+  padding: 12px;
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.ai-status span {
+  color: var(--muted);
+}
+
+.ai-status.active {
+  background: var(--teal-soft);
+  border: 1px solid #bdd5d1;
+}
+
+.ai-status.fallback {
+  background: #fff7ed;
+  border: 1px solid #f0c9b7;
+}
+
+.mobile-publish-tip {
+  display: none;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
 .split-layout {
   display: grid;
   grid-template-columns: minmax(320px, 420px) minmax(0, 1fr);
@@ -645,6 +675,71 @@ label {
 }
 
 @media (max-width: 620px) {
+  body {
+    background: #f8f8f8;
+  }
+
+  .app-shell {
+    display: block;
+  }
+
+  .sidebar {
+    position: fixed;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    top: auto;
+    z-index: 20;
+    padding: 8px max(8px, env(safe-area-inset-left)) calc(8px + env(safe-area-inset-bottom)) max(8px, env(safe-area-inset-right));
+    background: rgba(38, 52, 54, 0.96);
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+  }
+
+  .brand,
+  .sidebar-note {
+    display: none;
+  }
+
+  .nav {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 4px;
+    overflow: visible;
+  }
+
+  .nav-item {
+    height: 48px;
+    min-width: 0;
+    padding: 0 2px;
+    text-align: center;
+    font-size: 12px;
+    white-space: normal;
+    line-height: 1.2;
+  }
+
+  .main {
+    padding: 12px 14px calc(94px + env(safe-area-inset-bottom));
+  }
+
+  .topbar {
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    margin: -12px -14px 12px;
+    padding: 12px 14px;
+    background: rgba(248, 248, 248, 0.96);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid #ecefed;
+  }
+
+  .eyebrow {
+    display: none;
+  }
+
+  .topbar h2 {
+    font-size: 22px;
+  }
+
   .topbar-actions,
   .metric-row,
   .form-grid {
@@ -654,6 +749,117 @@ label {
 
   .metric-row {
     width: 100%;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .metric {
+    min-width: 0;
+    padding: 8px 10px;
+  }
+
+  .metric span {
+    font-size: 18px;
+  }
+
+  .metric small {
+    font-size: 12px;
+  }
+
+  .toolbar {
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+
+  .date-tabs {
+    margin-inline: -14px;
+    padding: 0 14px 4px;
+  }
+
+  .date-tab {
+    min-width: 76px;
+    padding: 8px 6px;
+    font-size: 13px;
+  }
+
+  .task-list {
+    gap: 18px;
+  }
+
+  .task-card {
+    margin-inline: -14px;
+    border-left: 0;
+    border-right: 0;
+    border-radius: 0;
+    box-shadow: none;
+    background: #fff;
+  }
+
+  .media-preview {
+    min-height: 0;
+    aspect-ratio: 1 / 1;
+    background: #ece7dc;
+  }
+
+  .task-body {
+    padding: 14px;
+    gap: 12px;
+  }
+
+  .task-meta,
+  .chip-row,
+  .asset-meta {
+    gap: 6px;
+  }
+
+  .chip {
+    min-height: 26px;
+    padding: 0 9px;
+    font-size: 11px;
+  }
+
+  .copy-box {
+    border: 0;
+    background: #fff;
+    padding: 2px 0 6px;
+    font-size: 17px;
+    line-height: 1.82;
+  }
+
+  .mobile-publish-tip {
+    display: block;
+    padding: 10px 12px;
+    border-radius: 8px;
+    background: #f3f6f4;
+  }
+
+  .task-actions {
+    position: sticky;
+    bottom: calc(64px + env(safe-area-inset-bottom));
+    z-index: 8;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin: 6px -14px -14px;
+    padding: 10px 14px calc(10px + env(safe-area-inset-bottom));
+    background: rgba(255, 255, 255, 0.97);
+    border-top: 1px solid #ecefed;
+    box-shadow: 0 -10px 24px rgba(35, 48, 51, 0.08);
+  }
+
+  .task-actions button {
+    min-height: 48px;
+    padding: 0 8px;
+    font-size: 14px;
+  }
+
+  .task-actions .quiet-button,
+  .task-actions .danger-button {
+    grid-column: span 1;
+  }
+
+  .task-actions .danger-button:last-child {
+    grid-column: 1 / -1;
   }
 
   .panel-header,
@@ -662,6 +868,35 @@ label {
   }
 
   .search {
+    max-width: none;
+  }
+
+  .split-layout {
+    gap: 12px;
+  }
+
+  .panel,
+  .asset-card,
+  .doctor-card,
+  .calendar-day {
+    border-radius: 8px;
+    box-shadow: none;
+  }
+
+  .asset-grid,
+  .calendar {
+    grid-template-columns: 1fr;
+  }
+
+  .asset-thumb {
+    height: auto;
+    aspect-ratio: 4 / 3;
+  }
+
+  .toast {
+    left: 14px;
+    right: 14px;
+    bottom: calc(82px + env(safe-area-inset-bottom));
     max-width: none;
   }
 }

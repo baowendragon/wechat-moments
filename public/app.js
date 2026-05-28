@@ -26,7 +26,8 @@ let state = {
   doctors: [],
   assets: [],
   posts: [],
-  settings: {}
+  settings: {},
+  runtime: {}
 };
 
 let selectedDoctorId = localStorage.getItem("selectedDoctorId") || "";
@@ -164,6 +165,7 @@ function renderAll() {
   syncDoctorSelectors();
   renderDateTabs();
   renderToday();
+  renderAIStatus();
   renderAssetPicker();
   renderLatestGenerated();
   renderAssets();
@@ -171,6 +173,19 @@ function renderAll() {
   renderCalendar();
   const dateInput = document.getElementById("scheduledDate");
   if (!dateInput.value) dateInput.value = selectedDate;
+}
+
+function renderAIStatus() {
+  const box = document.getElementById("aiStatus");
+  if (!box) return;
+  const runtime = state.runtime || {};
+  if (runtime.aiProvider === "openai") {
+    box.className = "ai-status active";
+    box.innerHTML = `<strong>OpenAI 已启用</strong><span>当前模型：${escapeHtml(runtime.aiModel)}</span>`;
+    return;
+  }
+  box.className = "ai-status fallback";
+  box.innerHTML = `<strong>当前为本地备用生成</strong><span>在 Render 环境变量中配置 OPENAI_API_KEY 后，会自动切换到 OpenAI。</span>`;
 }
 
 function syncDoctorSelectors() {
@@ -235,22 +250,31 @@ function taskCard(post) {
           <span class="chip">${escapeHtml(doctor?.name || "未绑定医生")}</span>
           <span class="chip">${escapeHtml(post.goal)}</span>
           <span class="chip">${escapeHtml(post.customerStage)}</span>
+          <span class="chip ${post.aiProvider === "openai" ? "strong" : ""}">${escapeHtml(aiLabel(post))}</span>
           <span class="chip ${post.status === "已发布" ? "strong" : ""}">${escapeHtml(post.status)}</span>
         </div>
         ${warnings.length ? `<div class="chip-row">${warnings.map(word => `<span class="chip warn">合规提示：${escapeHtml(word)}</span>`).join("")}</div>` : ""}
+        ${post.aiError ? `<div class="chip-row"><span class="chip warn">AI 提示：${escapeHtml(post.aiError)}</span></div>` : ""}
         <div class="copy-box">${escapeHtml(post.copy)}</div>
+        <div class="mobile-publish-tip">手机发布：先点“复制文案”，再点“保存素材”，打开微信朋友圈粘贴发布。</div>
         <div class="asset-meta">
           ${assets.map(item => `<span class="chip">${escapeHtml(item.name)}</span>`).join("")}
         </div>
         <div class="task-actions">
-          <button class="primary-button" data-action="copy">复制文案</button>
-          <button class="ghost-button" data-action="download">下载素材</button>
+          <button class="primary-button" data-action="copy">复制朋友圈文案</button>
+          <button class="ghost-button" data-action="download">保存素材到手机</button>
           <button class="quiet-button" data-action="edit">编辑文案</button>
           ${post.status === "已发布" ? "" : `<button class="danger-button" data-action="publish">标记已发布</button>`}
         </div>
       </div>
     </article>
   `;
+}
+
+function aiLabel(post) {
+  if (post.aiProvider === "openai") return post.aiModel || "OpenAI";
+  if (post.aiProvider === "local-fallback") return "本地备用";
+  return "本地生成";
 }
 
 function bindPostButtons(scope) {
@@ -439,6 +463,12 @@ async function copyText(text) {
 function downloadAssets(post) {
   const assets = post.assetIds.map(getAsset).filter(Boolean);
   if (!assets.length) return toast("这条任务没有素材");
+  const isMobile = window.matchMedia("(max-width: 760px)").matches;
+  if (isMobile && assets.length === 1) {
+    window.open(assets[0].url, "_blank", "noopener");
+    toast("已打开素材，长按可保存到手机");
+    return;
+  }
   assets.forEach((asset, index) => {
     window.setTimeout(() => {
       const link = document.createElement("a");
@@ -449,7 +479,7 @@ function downloadAssets(post) {
       link.remove();
     }, index * 220);
   });
-  toast("已开始下载素材");
+  toast(isMobile ? "已打开下载；如未保存，可长按素材" : "已开始下载素材");
 }
 
 function toast(message) {
