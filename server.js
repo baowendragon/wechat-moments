@@ -347,7 +347,36 @@ function extractOpenAIText(data) {
 }
 
 function extractChatCompletionText(data) {
-  return cleanText(data.choices?.[0]?.message?.content || "");
+  const content = data.choices?.[0]?.message?.content
+    || data.choices?.[0]?.delta?.content
+    || data.content
+    || data.message?.content
+    || data.output_text
+    || data.text;
+
+  if (typeof content === "string") return cleanText(content);
+
+  if (Array.isArray(content)) {
+    return cleanText(content.map(part => {
+      if (typeof part === "string") return part;
+      return part.text || part.content || part.output_text || "";
+    }).join(""));
+  }
+
+  return "";
+}
+
+function summarizeAIResponse(data) {
+  if (!data || typeof data !== "object") return "响应为空";
+  const choice = data.choices?.[0] || {};
+  const message = choice.message || {};
+  return JSON.stringify({
+    keys: Object.keys(data).slice(0, 8),
+    choiceKeys: Object.keys(choice).slice(0, 8),
+    messageKeys: Object.keys(message).slice(0, 8),
+    contentType: Array.isArray(message.content) ? "array" : typeof message.content,
+    finishReason: choice.finish_reason || choice.finishReason
+  });
 }
 
 function buildSystemPrompt() {
@@ -400,7 +429,7 @@ async function generateAICopy(input) {
     }
 
     const text = extractChatCompletionText(data);
-    if (!text) throw new Error(`${AI_PROVIDER_NAME} 没有返回可用文案。`);
+    if (!text) throw new Error(`${AI_PROVIDER_NAME} 没有返回可用文案。响应结构：${summarizeAIResponse(data)}`);
     return text.replace(/^["“]|["”]$/g, "").trim();
   }
 
@@ -423,7 +452,7 @@ async function generateAICopy(input) {
   }
 
   const text = extractOpenAIText(data);
-  if (!text) throw new Error(`${AI_PROVIDER_NAME} 没有返回可用文案。`);
+  if (!text) throw new Error(`${AI_PROVIDER_NAME} 没有返回可用文案。响应结构：${summarizeAIResponse(data)}`);
   return text.replace(/^["“]|["”]$/g, "").trim();
 }
 
