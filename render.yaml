@@ -16,7 +16,9 @@ services:
         value: 胜算云
       - key: AI_BASE_URL
         value: https://router.shengsuanyun.com/api/v1
+      - key: AI_API_TYPE
+        value: chat_completions
       - key: AI_MODEL
-        value: gpt-5-mini
+        value: google/gemini-3.5-flash
       - key: AI_API_KEY
         sync: false

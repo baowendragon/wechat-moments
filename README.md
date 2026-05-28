@@ -84,11 +84,12 @@ https://router.shengsuanyun.com/api/v1
 ```text
 AI_PROVIDER_NAME=胜算云
 AI_BASE_URL=https://router.shengsuanyun.com/api/v1
+AI_API_TYPE=chat_completions
 AI_API_KEY=你的胜算云 API Key
-AI_MODEL=你在胜算云购买或可用的模型名称
+AI_MODEL=google/gemini-3.5-flash
 ```
 
-`AI_MODEL` 要以胜算云控制台或文档里的模型名称为准。比如你购买的是某个 DeepSeek、Kimi、Qwen 或 GPT 模型，就填对应模型 ID。
+`AI_MODEL` 要以胜算云控制台或文档里的模型名称为准。你给的示例里模型是 `google/gemini-3.5-flash`，所以可以先填这个。如果后续切换 DeepSeek、Kimi、Qwen 或其他模型，就填对应模型 ID。
 
 保存后点击 `Save, rebuild, and deploy`。
 
@@ -104,6 +105,7 @@ AI_MODEL=你在胜算云购买或可用的模型名称
 ```text
 AI_PROVIDER_NAME=OpenAI
 AI_BASE_URL=https://api.openai.com/v1
+AI_API_TYPE=responses
 AI_API_KEY=你的 OpenAI API Key
 AI_MODEL=gpt-5-mini
 ```

@@ -16,6 +16,7 @@ const AI_BASE_URL = (process.env.AI_BASE_URL || process.env.OPENAI_BASE_URL || "
 const AI_MODEL = process.env.AI_MODEL || process.env.OPENAI_MODEL || "gpt-5-mini";
 const AI_API_KEY = process.env.AI_API_KEY || process.env.OPENAI_API_KEY || process.env.SSY_API_KEY || "";
 const AI_PROVIDER_NAME = process.env.AI_PROVIDER_NAME || (AI_BASE_URL.includes("shengsuanyun") ? "胜算云" : "OpenAI");
+const AI_API_TYPE = process.env.AI_API_TYPE || (AI_BASE_URL.includes("shengsuanyun") ? "chat_completions" : "responses");
 
 const MIME = {
   ".html": "text/html; charset=utf-8",
@@ -147,7 +148,8 @@ function getRuntimeInfo() {
     aiEnabled: Boolean(AI_API_KEY),
     aiProvider: AI_API_KEY ? AI_PROVIDER_NAME : "local",
     aiModel: AI_API_KEY ? AI_MODEL : "local-template",
-    aiBaseUrl: AI_API_KEY ? AI_BASE_URL : ""
+    aiBaseUrl: AI_API_KEY ? AI_BASE_URL : "",
+    aiApiType: AI_API_KEY ? AI_API_TYPE : ""
   };
 }
 
@@ -312,6 +314,18 @@ function extractOpenAIText(data) {
   return "";
 }
 
+function extractChatCompletionText(data) {
+  return cleanText(data.choices?.[0]?.message?.content || "");
+}
+
+function buildSystemPrompt() {
+  return [
+    "你是一个医生 IP 私域朋友圈内容运营专家。",
+    "你擅长把医生专业度、人设温度和轻咨询转化结合起来。",
+    "你的文案必须合规、克制、自然，避免医疗疗效承诺和夸大营销。"
+  ].join("\n");
+}
+
 async function generateAICopy(input) {
   if (!AI_API_KEY) return null;
 
@@ -322,16 +336,39 @@ async function generateAICopy(input) {
   if (process.env.AI_HTTP_REFERER) headers["HTTP-Referer"] = process.env.AI_HTTP_REFERER;
   if (process.env.AI_TITLE) headers["X-Title"] = process.env.AI_TITLE;
 
+  if (AI_API_TYPE === "chat_completions") {
+    const response = await fetch(`${AI_BASE_URL}/chat/completions`, {
+      method: "POST",
+      headers,
+      body: JSON.stringify({
+        model: AI_MODEL,
+        messages: [
+          { role: "system", content: buildSystemPrompt() },
+          { role: "user", content: buildOpenAIPrompt(input) }
+        ],
+        temperature: 0.6,
+        top_p: 0.7,
+        stream: false
+      })
+    });
+
+    const data = await response.json().catch(() => ({}));
+    if (!response.ok) {
+      const message = data.error?.message || `${AI_PROVIDER_NAME} 请求失败：${response.status}`;
+      throw new Error(message);
+    }
+
+    const text = extractChatCompletionText(data);
+    if (!text) throw new Error(`${AI_PROVIDER_NAME} 没有返回可用文案。`);
+    return text.replace(/^["“]|["”]$/g, "").trim();
+  }
+
   const response = await fetch(`${AI_BASE_URL}/responses`, {
     method: "POST",
     headers,
     body: JSON.stringify({
       model: AI_MODEL,
-      instructions: [
-        "你是一个医生 IP 私域朋友圈内容运营专家。",
-        "你擅长把医生专业度、人设温度和轻咨询转化结合起来。",
-        "你的文案必须合规、克制、自然，避免医疗疗效承诺和夸大营销。"
-      ].join("\n"),
+      instructions: buildSystemPrompt(),
       input: buildOpenAIPrompt(input),
       max_output_tokens: 500,
       store: false
@@ -340,12 +377,12 @@ async function generateAICopy(input) {
 
   const data = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const message = data.error?.message || `OpenAI 请求失败：${response.status}`;
+    const message = data.error?.message || `${AI_PROVIDER_NAME} 请求失败：${response.status}`;
     throw new Error(message);
   }
 
   const text = extractOpenAIText(data);
-  if (!text) throw new Error("OpenAI 没有返回可用文案。");
+  if (!text) throw new Error(`${AI_PROVIDER_NAME} 没有返回可用文案。`);
   return text.replace(/^["“]|["”]$/g, "").trim();
 }
 
