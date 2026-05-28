@@ -17,6 +17,7 @@ const AI_MODEL = process.env.AI_MODEL || process.env.OPENAI_MODEL || "gpt-5-mini
 const AI_API_KEY = process.env.AI_API_KEY || process.env.OPENAI_API_KEY || process.env.SSY_API_KEY || "";
 const AI_PROVIDER_NAME = process.env.AI_PROVIDER_NAME || (AI_BASE_URL.includes("shengsuanyun") ? "胜算云" : "OpenAI");
 const AI_API_TYPE = process.env.AI_API_TYPE || (AI_BASE_URL.includes("shengsuanyun") ? "chat_completions" : "responses");
+const AI_AUTH_HEADER = process.env.AI_AUTH_HEADER || "authorization";
 
 const MIME = {
   ".html": "text/html; charset=utf-8",
@@ -149,7 +150,8 @@ function getRuntimeInfo() {
     aiProvider: AI_API_KEY ? AI_PROVIDER_NAME : "local",
     aiModel: AI_API_KEY ? AI_MODEL : "local-template",
     aiBaseUrl: AI_API_KEY ? AI_BASE_URL : "",
-    aiApiType: AI_API_KEY ? AI_API_TYPE : ""
+    aiApiType: AI_API_KEY ? AI_API_TYPE : "",
+    aiAuthHeader: AI_API_KEY ? AI_AUTH_HEADER : ""
   };
 }
 
@@ -266,7 +268,8 @@ function generateCopy({ doctor, assets, goal, customerStage, tone }) {
 
 function buildOpenAIPrompt({ doctor, assets, goal, customerStage, tone }) {
   return [
-    "请为医生微信朋友圈生成一条可直接发布的中文文案。",
+    "请为医生个人微信朋友圈生成一条可直接发布的中文文案。",
+    "这条朋友圈发在医生自己的微信，不是机构公众号，不是小红书，不是广告落地页。",
     "",
     "医生信息：",
     `- 姓名：${doctor.name}`,
@@ -290,14 +293,43 @@ function buildOpenAIPrompt({ doctor, assets, goal, customerStage, tone }) {
       `   说明：${asset.notes || "运营未填写素材说明，请根据医生人设生成通用朋友圈文案。"}`
     ].join("\n")),
     "",
+    "朋友圈参考风格，学习表达方式，不要照抄：",
+    "以敬畏之心，打好每一针",
+    "是心声，也是忠告",
+    "决定面部立体度的底层关键，不在鼻子，而在于颌面",
+    "岁月不扰，胶原在线",
+    "核心变美思路：胶原平铺解决黑眼圈泪沟，苹果肌高光点重塑提升",
+    "外轮廓崎岖、泪沟凹陷，调整思路看这篇就可以",
+    "鼻尖下旋不立体？大部分人都搞错了",
+    "美，是精准到 0.01ml 的克制与野心",
+    "面中高光点出来，温婉柔和，自然协调，这就是做对项目的意义",
+    "医路向美，步履不停",
+    "#工作日常 变美进行中",
+    "",
     "输出要求：",
     "- 只输出朋友圈文案正文，不要标题、编号、解释、引号或 Markdown。",
-    "- 像医生本人发朋友圈，不像广告，不像机构宣传稿，不要出现“后台”“私信爆了”等网感营销话术。",
-    "- 口吻自然、有一点日常感，短句为主，4-7 个短段落，总字数 90-180 字。",
-    "- 可以温和引导咨询，但不要强促销，不要制造焦虑。",
+    "- 必须使用第一人称医生个人口吻，可以用“我”，不要用“我们”。",
+    "- 第一行必须是朋友圈标题感强的短句，12-28 个字，适合在朋友圈列表里一眼看到。",
+    "- 文案可以有医美审美感和轻微营销感，但不能像硬广、公众号或小红书笔记。",
+    "- 不要出现：欢迎咨询、后台、私信爆了、逆袭、变美秘籍、闭眼冲、无脑选、效果保证。",
+    "- 不要写成总结报告；不要空泛讲道理；不要连续使用“其实、通常、大方向”。",
+    "- 如果素材是人脸/皮肤照片，优先写面部轮廓、面中高光、泪沟、胶原、皮肤质感、基础条件、面诊判断等专业观察。",
+    "- 结构建议：金句标题 + 1-2 句专业拆解 + 1 句克制提醒/轻引导。",
+    "- 总字数 60-130 字，适合手机朋友圈阅读。",
+    "- 可以使用 0-2 个符号或 emoji，比如 ✨、🌹、❗、#工作日常，但不要堆砌。",
+    "- 可以轻轻引导发照片初步判断，但最后一句要自然，不要销售感。",
     "- 医疗表达必须克制：不能承诺疗效，不能使用绝对化词，不能说所有人都适合。",
-    "- 多用“先判断基础”“结合个人情况”“面诊后确认”“大方向”这类稳妥表达。",
-    "- 如果是案例或反馈素材，不要编造具体效果、数字、时间、客户身份。"
+    "- 如果是案例或反馈素材，不要编造具体效果、数字、时间、客户身份。",
+    "",
+    "请避免生成下面这种风格：",
+    "今天门诊，上午接诊了几位复查的老朋友。看着大家皮肤状态在往好的方向走，心里挺踏实的。经常有刚加我的朋友，一上来就问某个热门项目好不好。其实，皮肤管理没有标准答案。",
+    "",
+    "更推荐生成这种感觉：",
+    "面部高级感，不是堆出来的",
+    "",
+    "很多时候，决定上镜状态的不是单一部位，而是面中支撑、轮廓线和皮肤质感一起协调。",
+    "",
+    "先看基础，再定方案，克制一点反而更耐看。"
   ].join("\n");
 }
 
@@ -320,9 +352,12 @@ function extractChatCompletionText(data) {
 
 function buildSystemPrompt() {
   return [
-    "你是一个医生 IP 私域朋友圈内容运营专家。",
-    "你擅长把医生专业度、人设温度和轻咨询转化结合起来。",
-    "你的文案必须合规、克制、自然，避免医疗疗效承诺和夸大营销。"
+    "你是医生个人微信朋友圈代写助手。",
+    "你只写像医美医生本人发在朋友圈里的短文案。",
+    "文案要有医生 IP 的专业审美感、标题感和轻转化能力。",
+    "第一行必须抓人，适合朋友圈列表预览；正文要短、准、克制。",
+    "不能像广告、公众号、小红书长笔记或机构宣传。",
+    "必须规避医疗疗效承诺、极限词和焦虑营销。"
   ].join("\n");
 }
 
@@ -330,24 +365,30 @@ async function generateAICopy(input) {
   if (!AI_API_KEY) return null;
 
   const headers = {
-    "Content-Type": "application/json",
-    Authorization: `Bearer ${AI_API_KEY}`
+    "Content-Type": "application/json"
   };
+  if (AI_AUTH_HEADER.toLowerCase() === "x-api-key") {
+    headers["x-api-key"] = AI_API_KEY;
+  } else {
+    headers.Authorization = `Bearer ${AI_API_KEY}`;
+  }
   if (process.env.AI_HTTP_REFERER) headers["HTTP-Referer"] = process.env.AI_HTTP_REFERER;
   if (process.env.AI_TITLE) headers["X-Title"] = process.env.AI_TITLE;
 
-  if (AI_API_TYPE === "chat_completions") {
-    const response = await fetch(`${AI_BASE_URL}/chat/completions`, {
+  if (AI_API_TYPE === "chat_completions" || AI_API_TYPE === "messages") {
+    const endpoint = AI_API_TYPE === "messages" ? `${AI_BASE_URL}/messages` : `${AI_BASE_URL}/chat/completions`;
+    const response = await fetch(endpoint, {
       method: "POST",
       headers,
       body: JSON.stringify({
         model: AI_MODEL,
+        max_tokens: 1024,
         messages: [
           { role: "system", content: buildSystemPrompt() },
           { role: "user", content: buildOpenAIPrompt(input) }
         ],
-        temperature: 0.6,
-        top_p: 0.7,
+        temperature: 0.75,
+        top_p: 0.8,
         stream: false
       })
     });
